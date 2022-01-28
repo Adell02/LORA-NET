@@ -6,7 +6,7 @@ ser = serial.Serial(port='COM3', baudrate = 9600, timeout=.1)   #open serial por
 
 def open_file():    #makes a large string with all the data in the file
     lines = []
-    with open ('./LORA_Sender_v.0/close_ejemplo_2kb.rar','rb') as f:
+    with open ('./LORA_Sender_v.0/large_example.rar','rb') as f:
         line = f.readline()
         
         while (line):
@@ -23,8 +23,8 @@ sleep(2)
 for m in message:
     for car in m:
         binary_data += str(car) + " "  # Turns the caracters into binary
-        if(i>24):
-            ser.write(bytes(binary_data, encoding="utf8"))      # Sends string of 25 characters = 250 bytes (8 x character + 2 x character -> 0b at beginning) 
+        if(i>61):
+            ser.write(bytes(binary_data, encoding="utf8"))      # Sends string of 61 integers = 244 bytes (4 x int) 
             print(j)
             print(binary_data)
             print()
