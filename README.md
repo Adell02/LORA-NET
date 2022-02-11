@@ -39,7 +39,7 @@
     </li>
     <li><a href="#usage">Usage</a>
     <ul>
-        <li><a href="#setup">Setup</a></li>
+        <li><a href="#setup">Set up</a></li>
         <li><a href="#gui">GUI</a></li>
       <li><a href="#errors">Errors</a></li>
       </ul>
@@ -54,18 +54,18 @@
 
 <!-- ABOUT THE PROJECT -->
 ## About The Project
-The aim of LORA net is to learn building a network based in 2.4GHz LoRa communication modules and ATmega328P U (Arduino Uno) as microcontroller. 
+The aim of LORA net is to learn to build a network based in 2.4GHz LoRa communication modules and ATmega328P U (Arduino Uno) as the microcontroller. 
 
-LORA net consists in a mesh network based in two kind of nodes: `User Nodes` and `Middle Nodes`. 
+LORA net consists in a mesh network based in two kinds of nodes: `User Nodes` and `Middle Nodes`. 
 
 ### User Nodes
 
-Each user with an apropiate LoRa module and settings can access the network using the python-based desktop application in the <a href="https://github.com/Adell02/LORA-NET/GUI_v.0">GUI folder</a>. 
+Each user with an appropriate LoRa module and settings can access the network using the python-based desktop application in the <a href="https://github.com/Adell02/LORA-NET/GUI_v.0">GUI folder</a>. 
 There are (to date) three main functions available for User Nodes:
 <ul>
   <br />
   <li><strong>🔴Google Search:</strong> The node request to any other in the network with internet connection available a Google Search. The User receives the entries relative to that search and can choose from which of all to get the text in it. </li>
-  <li><strong>Private Message:</strong> The desired message is sent to a specific node in the network (acording to an ID) if it's available.</li>
+  <li><strong>Private Message:</strong> The desired message is sent to a specific node in the network (according to an ID) if it's available.</li>
   <li><strong>File Transfer:</strong> Sending compressed via radio to any other user in the net</li>
 </ul>
 
@@ -74,10 +74,9 @@ There are (to date) three main functions available for User Nodes:
 
 ### 🔴Middle Nodes
 
-Most of the nodes of the network may be Middle Nodes in order to ensure a good performance of the net at long distances. These nodes are responsible for receiving, analyzing where are the packets addressed to and sending them again following the most efficient route when a transmission can't directly reach the recipient node.  
+Most of the nodes of the network may be Middle Nodes in order to ensure a good performance of the net at long distances. These make possible the connection between User Nodes that can't directly communicate with each other (whether they are too far, some nodes are busy...). They are in charge of forwarding the messages they receive to other Nodes (trying to follow the most efficient route) to make them reach the recipient.
 
-
-We are working to bring a feature that allows converting a User Node into a Middle Node whenever needed, imporving the net performance.
+We are working to bring a feature that allows converting a User Node into a Middle Node whenever needed, improving the net performance.
 
 <p align="right">(<a href="#top">back to top</a>)</p>
 
@@ -118,8 +117,8 @@ Commenting our code is relevant to make it readable.
 
 
 ## Usage
-### Setup
-The following steps indicate the procedure to SETUP the program:
+### Set up
+The following steps indicate the procedure to SET UP the program:
 1) `Download` or `clone the repository`
 2) Connect the LoRa module to the Arduino Uno as shown <a href="#hardware-connections">here</a>.
 3) Compile and upload the `Arduino_gui.ino` file located in directory `GUI_V.0\Arduino_GUI` 
@@ -147,7 +146,7 @@ It has a menu-bar with some options available such as Save (the console log), Ex
 
 On the right side of the window, there are some indicators whether the Node is `Sending` or `Receiving` a message/file/Google search from another one and also the `Port Configuration`.
 
-A the center of the screen there are the fucntions available for User Nodes. Simply `fill the textbox and click the button next to it` to perform an action.
+At the center of the screen there are the functions available for User Nodes. Simply `fill the text box and click the button next to it` to perform an action.
 
 Underneath it, there is the `main console`. Here, all errors/ success messages are shown, as well as the information about the incomming and outcomming radio transmissions.
 
