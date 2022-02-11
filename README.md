@@ -138,7 +138,8 @@ In <a href="#errors">Errors section</a> you may find how to solve any error prin
 The interface consists on a small window built with `Tkinter` and is intended to be a simple but useful and interactive GUI. 
 
 <div align="center">
-<img src="https://user-images.githubusercontent.com/84263340/153644845-c56877c7-ef85-4604-a812-86f3208b942c.png" width="400" height="400">
+<img src="https://user-images.githubusercontent.com/84263340/153661704-ac2f8225-d1c3-42b7-bd6c-7d41504fd93d.png" width="400" height="400">
+
 </div>
 
 
