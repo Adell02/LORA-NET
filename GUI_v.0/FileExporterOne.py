@@ -10,6 +10,7 @@ def open_file(route):    #makes a large string with all the data in the file
             lines.append(line)
             line= f.readline()            
     return(lines)   
+
 def SendMain(ser,route,textBox):
     filesize = os.path.getsize(route)
     if (filesize%62 == 0):
@@ -22,18 +23,19 @@ def SendMain(ser,route,textBox):
     binary_data = ""
     i=0
     j=0
+    ser.write(bytes("FILE",encoding="utf8"))
     sleep(2)
     for m in message:
         for car in m:
             binary_data += str(car) + " "  # Turns the caracters into binary
             if(i>62):
-                    #ser.write(bytes(binary_data, encoding="utf8"))      # Sends string of 61 integers = 244 bytes (4 x int) 
+                ser.write(bytes(binary_data, encoding="utf8"))      # Sends string of 61 integers = 244 bytes (4 x int) 
                 #print(j)
                 print(binary_data)
                 #print()
                 textBox.write("Packet %i" %(j))
                 textBox.PB_step(100/packets,0)
-                    #sleep(2.5)        # Give some time to the arduino to send it (trying to send it simultaneously)
+                sleep(2.5)        # Give some time to the arduino to send it (trying to send it simultaneously)
                 binary_data = ""
                 i = 0
                 j+=1

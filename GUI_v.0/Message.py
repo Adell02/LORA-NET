@@ -10,13 +10,14 @@ def SendMg(ser,mg,textBox):
         packets = mgsize//255 +1      
     textBox.write("\n Sending %i bytes in %i packets." %(mgsize, packets))
     ser.write(bytes("MG",encoding="UTF8"))
-    sleep(1)
+    sleep(2)
     i=0
     if (sys.getsizeof(mg)<254):
         ser.write(bytes(mg, encoding="utf8"))      # Sends string of 61 integers = 244 bytes (4 x int) 
         textBox.write("Packet %i" %(i))
         textBox.PB_step(100/packets,0)
         print(mg)
+        sleep(1)
     else:
         mg_split = ""
         print(sys.getsizeof(mg)//254)
@@ -28,6 +29,7 @@ def SendMg(ser,mg,textBox):
             textBox.write("Packet %i" %(i))
             textBox.PB_step(100/packets,0)
             i+=1
+            sleep(2)
 
 
     sleep(2)
