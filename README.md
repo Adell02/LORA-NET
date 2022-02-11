@@ -60,7 +60,7 @@ LORA net consists in a mesh network based in two kinds of nodes: `User Nodes` an
 
 ### User Nodes
 
-Each user with an appropriate LoRa module and settings can access the network using the python-based desktop application in the <a href="https://github.com/Adell02/LORA-NET/GUI_v.0">GUI folder</a>. 
+Each user with an appropriate LoRa module and settings can access the network using the python-based desktop application in the <a href="https://github.com/Adell02/LORA-NET/tree/main/GUI_v.0">GUI folder</a>. 
 There are (to date) three main functions available for User Nodes:
 <ul>
   <br />
@@ -107,7 +107,7 @@ This project is based on the Arduino Uno and Semtech's modules SX127x.
 
 
 ### Files
-Every file regarding the uC is programmed with the Arduino IDE (C++). The main Arduino file (Arduino_GUI.ino) is located <a href="https://github.com/Adell02/LORA-NET/GUI_v.0/Arduino_GUI">here</a> and works in line with the main python program named <a href="https://github.com/Adell02/LORA-NET/GUI_v.0/">gui.py</a>.
+Every file regarding the uC is programmed with the Arduino IDE (C++). The main Arduino file (Arduino_GUI.ino) is located <a href="https://github.com/Adell02/LORA-NET/tree/main/GUI_v.0/Arduino_GUI">here</a> and works in line with the main python program named <a href="https://github.com/Adell02/LORA-NET/tree/main/GUI_v.0">gui.py</a>.
 
 Commenting our code is relevant to make it readable. 
 
