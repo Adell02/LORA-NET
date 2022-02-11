@@ -119,6 +119,8 @@ If there is a success message and no errors are displayed in the console, your u
 In <a href="#errors">Errors section</a> you may find how to solve any error printed to the console. 
 
 ### GUI
+![image](https://user-images.githubusercontent.com/84263340/153644845-c56877c7-ef85-4604-a812-86f3208b942c.png)
+
 The interface consists on a small window built with `Tkinter` and meant to be a simple yet useful interactive GUI. 
 It has a menu-bar with some options available such as Save (the console log), Exit (the program), Clear (the prompt) or Select All. 
 On the right side of the window, there are some indicators whether the Node is `Sending` or `Receiving` a message/file/Google search from another one and also the `Port Configuration`.
