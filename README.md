@@ -31,7 +31,7 @@
     <li>
       <a href="#getting-started">Getting Started</a>
       <ul>
-        <li><a href="#prerequisites">Prerequisites</a></li>
+        <li><a href="#hardware-connections">Hardware Connections</a></li>
         <li><a href="#installation">Installation</a></li>
       </ul>
     </li>
@@ -72,14 +72,26 @@ We are working to bring a feature that allows converting a User Node into a Midd
 This project is based on the Arduino Uno and Semtech's modules SX127x. 
 
 ### Hardware Connections
-<div align="center">
-  
+<div>
   <img src="https://user-images.githubusercontent.com/84263340/153633151-c42c3546-dbfb-435a-bd68-98cd23723e13.png" width="200" height="200">
-    <br />
   <img src="https://user-images.githubusercontent.com/84263340/153633898-49054876-de93-42f7-8cde-cd6fd96ee445.png" width="200" height="200">
 </div>
 
-| Primer encabezado | Segundo encabezado |
+| SX127x  | Arduino Uno |
 | ------------- | ------------- |
-| Contenido de la celda  | Contenido de la celda  |
-| Contenido de la celda  | Contenido de la celda  |
+| NSS  | D10  |
+| MOSI  | D11  |
+| MISO  | D12  |
+| SCK  | D13  |
+| GND  | GND  |
+| 3.3V  | 3.3V  |
+| RST  | D9  |
+| DIO0  | D2  |
+
+
+<br />
+
+### Files
+Every file regarding the uC is programmed with the Arduino IDE (C++). The main Arduino file (Arduino_GUI.ino) is located <a href="https://github.com/Adell02/LORA-NET/GUI_v.0/Arduino_GUI">here</a> and works in line with the main python program named <a href="https://github.com/Adell02/LORA-NET/GUI_v.0/">gui.py</a>.
+
+Commenting our code is relevant to make it readable. 
