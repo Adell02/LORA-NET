@@ -1,6 +1,7 @@
 import threading
 from tkinter import filedialog
 from tkinter.ttk import Progressbar
+import webbrowser
 import PIL.Image
 import PIL.ImageTk
 import serial
@@ -9,35 +10,50 @@ from FileExporterOne import SendMain
 from Message import SendMg
 from ReceiveReader import ContinuousReader
 
-root = Tk()
-root.title("LoRa NET")
-root.geometry("650x690")
-root.resizable(0, 0)
-root.config(bd=15)
+LOG = "\n LORA NET . Version 1.0.\n Options available: \n 1) Google Search: Enter a word or sentence to look for. Once the title is choosed, the text in the page will be returned. \n 2) Send Private Message: Fill the box with the message you would like to send privately. \n 3) Send File: Select the file you would like to send.\n Enjoy the radio!"
+ID = 1
 
-logo = PIL.Image.open("./img/logo.png")
-logo = PIL.ImageTk.PhotoImage(logo)
 
-root.iconbitmap(r'./img/reduced_logo.ico')
+# menubar functions
+def SavePrompt():
+    f = filedialog.asksaveasfile(mode='w', defaultextension=".txt")
+    if f is None:
+        return
+    text2save = str(textBox.textBox.get(1.0,END))
+    f.write(text2save)
+    f.close()
+
+def selectall():
+    textBox.textBox.focus()
+    textBox.textBox.tag_add('sel', '1.0', 'end')
+
+def clearall():
+    textBox.textBox.config(state=NORMAL)
+    textBox.textBox.delete('1.0',END)
+    textBox.textBox.config(state=DISABLED)
+
+def Help():
+    webbrowser.open_new('https://github.com/Adell02/LORA-NET')
+
+def AboutLora():
+    textBox.write(LOG)
+
 # Open Com
 def OpenCom():
-    global ser    
+    global ser
     ComPort.set(com.get())
     try:
         if error.get() == 0:
-            textBox.write("%s port has already been successfully configured" %(ComPort.get()))    
+            textBox.write(
+                "%s port has already been successfully configured" % (ComPort.get()))
         else:
             ser = serial.Serial(port=ComPort.get(), baudrate=9600, timeout=.1)
             error.set(0)
     except:
-        textBox.write("%s port not set correctly." %(ComPort.get()))
+        textBox.write("%s port not set correctly." % (ComPort.get()))
         root.update_idletasks()
         comButton.wait_variable(error)
         root.update_idletasks()
-    
-      
-        
-
 
 
 # Set SENDING indicator
@@ -67,6 +83,8 @@ def SendDoc():
     SetSendingLight()
 
 # Function for sending a Private Message
+
+
 def SendMessage():
     SetSendingLight()
     mg = Chatmg.get()
@@ -98,7 +116,7 @@ class TEXTBOX:
 
         self.indicator = IntVar(None, 0)
         self.radioReceiving = Radiobutton()
-        
+
     def write(self, *message, end="\n", sep=" "):
         text = " "
         for item in message:
@@ -117,6 +135,36 @@ class TEXTBOX:
         else:
             self.progressbar['value'] = 0
         root.update_idletasks()
+
+
+root = Tk()
+root.title("LoRa NET")
+root.geometry("650x690")
+root.resizable(0, 0)
+menubar = Menu(root)
+root.config(bd=15, menu=menubar)
+filemenu = Menu(menubar, tearoff=0)
+filemenu.add_command(label="Save",command=SavePrompt)
+filemenu.add_separator()
+filemenu.add_command(label="Exit", command=root.destroy)
+
+editmenu = Menu(menubar, tearoff=0)
+editmenu.add_command(label="Clear",command=clearall)
+editmenu.add_command(label="Select All",command=selectall)
+
+helpmenu = Menu(menubar, tearoff=0)
+helpmenu.add_command(label="Help",command=Help)
+helpmenu.add_separator()
+helpmenu.add_command(label="About Lora Net",command=AboutLora)
+
+menubar.add_cascade(label="File", menu=filemenu)
+menubar.add_cascade(label="Edit", menu=editmenu)
+menubar.add_cascade(label="Help", menu=helpmenu)
+
+logo = PIL.Image.open("./img/logo.png")
+logo = PIL.ImageTk.PhotoImage(logo)
+
+root.iconbitmap(r'./img/reduced_logo.ico')
 
 # Widget definition: Frame, Title, entries + buttons, textBox
 titleBox = Frame(root)
@@ -138,14 +186,14 @@ title.grid(row=0, column=1, sticky="nsew", rowspan=5)
 radioSending = Radiobutton(titleBox, text="Sending", fg="gray",
                            indicatoron=False, state=DISABLED, width=10, value=1)
 radioSending.grid(row=0, column=2, sticky="e")
-com = Entry(titleBox, width=13,justify=CENTER)
-com.grid(row=3,column=2,sticky="e")
-com.insert(0,"COM5")
+com = Entry(titleBox, width=13, justify=CENTER)
+com.grid(row=3, column=2, sticky="e")
+com.insert(0, "COM4")
 
 ComPort = StringVar()
 
-comButton = Button(titleBox,width=10,text="Set COM",command=OpenCom)
-comButton.grid(row=4,column=2,sticky="e")
+comButton = Button(titleBox, width=10, text="Set COM", command=OpenCom)
+comButton.grid(row=4, column=2, sticky="e")
 
 
 optionBox = Frame(root)
@@ -169,7 +217,7 @@ fileDir.grid(row=3, column=1, pady=5, sticky="ew", columnspan=2)
 
 textBox = TEXTBOX(root)
 textBox.radioReceiving = Radiobutton(titleBox, text="Receiving", fg="gray",
-                             indicatoron=False, state=DISABLED, width=10, value=2)
+                                     indicatoron=False, state=DISABLED, width=10, value=2)
 textBox.radioReceiving.grid(row=1, column=2, sticky="e")
 
 radioSending['variable'] = textBox.indicator
@@ -178,20 +226,16 @@ textBox.radioReceiving['variable'] = textBox.indicator
 # open serial port
 error = IntVar()
 error.set(1)
+textBox.write("Please set the COM port to start using LORA net.")
 root.wait_variable(error)
 
-textBox.write("%s port set correctly" %(ComPort.get()))
-textBox.write("\n LORA NET console. Version 1.0.")
-textBox.write("Options available: \n 1) Google Search: Enter a word or sentence to look for. Once the title is choosed, the text in the page will be returned. \n 2) Send Private Message: Fill the box with the message you would like to send privately. \n 3) Send File: Select the file you would like to send.")
-textBox.write("Enjoy the radio!")
-#Start listening to arduino Serial in parallel thread
-threading.Thread(target= ContinuousReader, args=[ser,textBox]).start()  
-
-#root.after(0,ContinuousReader(ser,textBox))
-
-# Init console message
+textBox.write("%s port set correctly" % (ComPort.get()))
+textBox.write(LOG)
+# Start listening to arduino Serial in parallel thread
+threading.Thread(target=ContinuousReader, args=[ser, textBox]).start()
 
 
 
+root.protocol("WM_DELETE_WINDOW", root.destroy)
 
 root.mainloop()
