@@ -32,10 +32,16 @@
       <a href="#getting-started">Getting Started</a>
       <ul>
         <li><a href="#hardware-connections">Hardware Connections</a></li>
-        <li><a href="#installation">Installation</a></li>
+        <li><a href="#files">Files</a></li>
       </ul>
     </li>
-    <li><a href="#usage">Usage</a></li>
+    <li><a href="#usage">Usage</a>
+    <ul>
+        <li><a href="#setup">Setup</a></li>
+        <li><a href="#gui">GUI</a></li>
+      <li><a href="#errors">Errors</a></li>
+      </ul>
+    </li>
     <li><a href="#roadmap">Roadmap</a></li>
     <li><a href="#contributing">Contributing</a></li>
     <li><a href="#license">License</a></li>
@@ -95,3 +101,23 @@ This project is based on the Arduino Uno and Semtech's modules SX127x.
 Every file regarding the uC is programmed with the Arduino IDE (C++). The main Arduino file (Arduino_GUI.ino) is located <a href="https://github.com/Adell02/LORA-NET/GUI_v.0/Arduino_GUI">here</a> and works in line with the main python program named <a href="https://github.com/Adell02/LORA-NET/GUI_v.0/">gui.py</a>.
 
 Commenting our code is relevant to make it readable. 
+
+(A more detailed explanation of each file will be written in the near future)
+
+## Usage
+### Setup
+The following steps indicate the procedure to SETUP the program:
+1) `Download` or `clone the repository`
+2) Connect the LoRa module to the Arduino Uno as shown <a href="#hardware-connections">here</a>.
+3) Compile and upload the `Arduino_gui.ino` file located in directory `GUI_V.0\Arduino_GUI` 
+4) Connect the `Arduino Board to your PC` via Serial (USB) and check which `PORT` is using (it may be "/dev/ACMx" in Linux and "COMx" in Windows).
+5) Run `gui.py` located in directory `GUI_v.0`
+6) On the top-right corner, write the `PORT` in use.
+
+If there is a success message and no errors are displayed in the console, your user node is configured correctly.
+
+In <a href="#errors">Errors section</a> you may find how to solve any error printed to the console. 
+
+### GUI
+
+### Errors
