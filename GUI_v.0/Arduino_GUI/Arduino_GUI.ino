@@ -3,6 +3,7 @@
 
 String r = "";
 int packetSize;
+char sread;
 
 void setup() {
   Serial.begin(9600);
@@ -12,22 +13,28 @@ void setup() {
     while (1);
   }
   LoRa.setSyncWord("0x01");
-  LoRa.enableCrc();
   Serial.print("READY. Waiting for serial. ");
 }
 
 void loop() {
   
   while(Serial.available())
-  {    
-    r.concat((char)Serial.read());
+  {        
+    sread = Serial.read();   
+    if(sread != '*')
+    {
+      r.concat(sread);
+    }
+    
+   
   }
-  if(r != "")
+  if(r != "" & sread == '*')
   {
+    r = "1#" + r;
     LoRa.beginPacket();
     LoRa.print(r);
     LoRa.endPacket();
-    Serial.print(" ");
+    Serial.print(r);
     r = "";
   }
   packetSize = LoRa.parsePacket();

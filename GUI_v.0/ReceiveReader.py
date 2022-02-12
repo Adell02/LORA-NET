@@ -18,18 +18,20 @@ def SetReceivingLight(textBox):
         textBox.radioReceiving['state'] = DISABLED
 
 # Read message between start and end
-def ReadUntilEnd(ser):
-    message = ""
+def ReadUntilEnd(ser,Id):
+    IdTag = bytes(str(Id)+"#",encoding="UTF-8")
+    message = ""    
     a_read = ser.readline()
-    while(a_read!= b"END"):        
-        if(len(a_read)):
-            message += a_read.decode()        
+    while(a_read!= IdTag+b"END"):   
+
+        if(len(a_read) and a_read.split(b"#")[0] == bytes(str(Id),encoding="UTF-8")):
+            message += (a_read.decode()).replace(IdTag.decode(),"")
         a_read = ser.readline()
     return(message)
 
 # Appends hex data in document
 def open_file(ser,textBox,error_list):   
-    a_read = ser.readline()
+    a_read = ser.readline()        
     index = 0
     while(a_read!= b"END"):        
         if(len(a_read)):
@@ -53,19 +55,24 @@ def open_file(ser,textBox,error_list):
 def ContinuousReader(ser,textBox):
     textBox.write("\n Continuous Reading Enabled")
     while (True):    
-        a_read = ser.readline()
-        if(len(a_read) and textBox.indicator.get()==0):         
+        a_read = ser.readline()    
+        if(b"READY" in a_read):
+            textBox.write("Node Ready.")                        
+            
+        elif(len(a_read) and textBox.indicator.get()==0):  
+            Id = int(a_read.split(b'#')[0])
+             
             SetReceivingLight(textBox)               
-            if (a_read == b"GS"):
+            if (b"GS" in a_read):
                 continue
-            elif (a_read == b"MG"):
-                textBox.write("\n Message incoming: ")
-                textBox.write(ReadUntilEnd(ser))
-            elif (a_read == b"FILE"):
+            elif (b"MG" in a_read):
+                textBox.write("\n Message incoming from User Node %i: " %(Id))
+                textBox.write(ReadUntilEnd(ser,Id))
+            elif (b"FILE"in a_read):
                 with open (doc,'w') as f:   # Blank document
                     f.write('')
                 error_list=[]
-                textBox.write("\n File Incoming: ")
+                textBox.write("\n File Incoming from %i: " %(Id))
                 open_file(ser,textBox,error_list)
                 textBox.write("File Received with %i errors" %(len(error_list)))
 
