@@ -1,3 +1,5 @@
+from distutils import command
+from operator import is_
 import threading
 from tkinter import filedialog
 from tkinter.ttk import Progressbar
@@ -5,6 +7,7 @@ import webbrowser
 import PIL.Image
 import PIL.ImageTk
 import serial
+import urllib.request
 from tkinter import *
 from FileExporterOne import SendFile
 from Message import SendMg
@@ -59,6 +62,7 @@ def OpenCom(event):
         comButton.wait_variable(error)
         root.update_idletasks()
 
+# Set the user you want to send the messages/files
 def SetToId(event):
     global ToId
     ToId = SendToEntry.get()
@@ -68,6 +72,38 @@ def SetToId(event):
     except ValueError or TypeError:
         textBox.write("Please enter a valid ID (for example: 5)")
 
+# Check if there is internet connection
+def CheckInternet(set):
+    url = "https://github.com/Adell02/LORA-NET"
+    try:
+        urllib.request.urlopen(url)                   
+        if set and shareInternetStatus.get() == 0:            
+            shareInternetStatus.set(1)            
+            shareInternet['fg'] = "green"
+        elif set and shareInternetStatus.get() == 1:
+            shareInternetStatus.set(0)
+            shareInternet['fg'] = "black"
+        elif not set and shareInternetStatus.get() == 0:
+            shareInternet['state']=NORMAL
+            shareInternet['fg']="black"
+            is_internet.set(1)
+        return(True)     
+    except:
+        shareInternet['state'] = DISABLED
+        shareInternet['fg'] = "gray"
+        shareInternetStatus.set(0)
+        is_internet.set(0)
+        return(False)
+
+# Internet connection check parallel routine
+def CheckInternetLoop():
+    prevstatus = is_internet.get()
+    CheckInternet(False)
+    root.after(500,CheckInternetLoop)
+    if (prevstatus != is_internet.get() and is_internet.get()==1):
+        textBox.write("\n You have internet connection now")
+    elif(prevstatus != is_internet.get() and is_internet.get()==0):
+        textBox.write("\n You don't have internet connection now. Sharing internet is disabled")
 
 # Set SENDING indicator light on/off
 def SetSendingLight():
@@ -232,6 +268,9 @@ SendToBut = Button(titleBox, width =10,text="Receiver ID",
                    command=lambda: SetToId(True))
 SendToBut.grid(row=1, column=0, sticky="w")
 
+shareInternet = Button(titleBox, text="Share Internet",command=lambda: CheckInternet(True))
+shareInternet.grid(row=3, column=0, sticky="w")
+
 radioSending = Radiobutton(titleBox, text="Sending", fg="gray",
                            indicatoron=False, state=DISABLED, width=10, value=1)
 radioSending.grid(row=0, column=2, sticky="e")
@@ -278,7 +317,18 @@ textBox.radioReceiving['variable'] = textBox.indicator
 # open serial port
 error = IntVar()
 error.set(1)
-textBox.write("Please set the COM port to start using LORA net.")
+shareInternetStatus = IntVar()
+shareInternetStatus.set(0)
+is_internet = IntVar()
+if(not CheckInternet(False)):    
+    textBox.write("No connection => 'Share Internet' option disabled")
+else:    
+    textBox.write("Consider enabling 'Share Internet' (to other User Nodes)")
+
+# Infinite loop checking internet connection in a secondary thread
+CheckInternetLoop()
+
+textBox.write("Please set the COM port to start using LORA net")
 root.wait_variable(error)
 
 textBox.write("%s port set correctly" % (ComPort.get()))
@@ -286,6 +336,7 @@ textBox.write(config.LOG)
 
 # Start listening to arduino Serial in parallel thread
 threading.Thread(target=ContinuousReader, args=[ser, textBox]).start()
+
 
 # Destroy main window when closing app
 root.protocol("WM_DELETE_WINDOW", root.destroy)

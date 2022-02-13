@@ -1,5 +1,6 @@
 from base64 import encode
 import binascii
+from logging import root
 from tkinter import *
 import config
 
@@ -54,7 +55,7 @@ def open_file(ser, textBox, header, error_list):
 # Main Continuous reading function
 def ContinuousReader(ser, textBox):
 
-    while (True):
+    while (root):
         a_read = ser.readline()
         if(b"READY" in a_read):
             textBox.write("\n Node Ready")
