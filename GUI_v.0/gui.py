@@ -10,8 +10,8 @@ from FileExporterOne import SendFile
 from Message import SendMg
 from ReceiveReader import ContinuousReader
 
-LOG = "\n LORA NET . Version 1.0.\n Options available: \n 1) Google Search: Enter a word or sentence to look for. Once the title is choosed, the text in the page will be returned. \n 2) Send Private Message: Fill the box with the message you would like to send privately. \n 3) Send File: Select the file you would like to send.\n Enjoy the radio!"
-ID = 1
+import config
+
 
 
 # menubar functions
@@ -36,7 +36,7 @@ def Help():
     webbrowser.open_new('https://github.com/Adell02/LORA-NET')
 
 def AboutLora():
-    textBox.write(LOG)
+    textBox.write(config.LOG)
 
 # Open Com
 def OpenCom():
@@ -47,7 +47,7 @@ def OpenCom():
             textBox.write(
                 "%s port has already been successfully configured" % (ComPort.get()))
         else:
-            ser = serial.Serial(port=ComPort.get(), baudrate=9600, timeout=.1)
+            ser = serial.Serial(port=ComPort.get(), baudrate = config.BAUDRATE, timeout=.1)
             error.set(0)
     except:
         textBox.write("%s port not set correctly." % (ComPort.get()))
@@ -188,7 +188,7 @@ radioSending = Radiobutton(titleBox, text="Sending", fg="gray",
 radioSending.grid(row=0, column=2, sticky="e")
 com = Entry(titleBox, width=13, justify=CENTER)
 com.grid(row=3, column=2, sticky="e")
-com.insert(0, "COM4")
+com.insert(0, config.DEFAULT_PORT)
 
 ComPort = StringVar()
 
@@ -230,7 +230,7 @@ textBox.write("Please set the COM port to start using LORA net.")
 root.wait_variable(error)
 
 textBox.write("%s port set correctly" % (ComPort.get()))
-textBox.write(LOG)
+textBox.write(config.LOG)
 # Start listening to arduino Serial in parallel thread
 threading.Thread(target=ContinuousReader, args=[ser, textBox]).start()
 

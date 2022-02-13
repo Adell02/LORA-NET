@@ -1,6 +1,7 @@
+from base64 import encode
 import binascii
-from email import message
 from tkinter import *
+import config
 
 
 doc = 'received_file.rar'
@@ -19,23 +20,23 @@ def SetReceivingLight(textBox):
 
 # Read message between start and end
 def ReadUntilEnd(ser,Id):
-    IdTag = bytes(str(Id)+"#",encoding="UTF-8")
+    IdTag = bytes(str(Id)+config.ID_MARKER,encoding="UTF-8")
     message = ""    
     a_read = ser.readline()
     while(a_read!= IdTag+b"END"):   
 
-        if(len(a_read) and a_read.split(b"#")[0] == bytes(str(Id),encoding="UTF-8")):
+        if(len(a_read) and a_read.split(bytes(config.ID_MARKER,encoding="UTF-8"))[0] == bytes(str(Id),encoding="UTF-8")):
             message += (a_read.decode()).replace(IdTag.decode(),"")
         a_read = ser.readline()
     return(message)
 
 # Appends hex data in document
 def open_file(ser,textBox,Id,error_list):  
-    IdTag = bytes(str(Id)+"#",encoding="UTF-8")
+    IdTag = bytes(str(Id)+config.ID_MARKER,encoding="UTF-8")
     a_read = ser.readline()        
     index = 0
     while(a_read!= IdTag+b"END"):        
-        if(len(a_read) and a_read.split(b"#")[0] == bytes(str(Id),encoding="UTF-8")):
+        if(len(a_read) and a_read.split(bytes(config.ID_MARKER,encoding="UTF-8"))[0] == bytes(str(Id),encoding="UTF-8")):
             textBox.write("Packet %i" %(index))
             a_read = a_read.decode().replace(IdTag.decode(),"")                            
             try:
@@ -61,23 +62,23 @@ def ContinuousReader(ser,textBox):
             textBox.write("Node Ready.")                        
             
         elif(len(a_read) and textBox.indicator.get()==0):  
-            Id = int(a_read.split(b'#')[0])
-             
-            SetReceivingLight(textBox)               
-            if (b"GS" in a_read):
-                continue
-            elif (b"MG" in a_read):
-                textBox.write("\n Message incoming from User Node %i: " %(Id))
-                textBox.write(ReadUntilEnd(ser,Id))
-            elif (b"FILE"in a_read):
-                with open (doc,'w') as f:   # Blank document
-                    f.write('')
-                error_list=[]
-                textBox.write("\n File Incoming from User Node %i: " %(Id))
-                open_file(ser,textBox,Id,error_list)
-                textBox.write("File Received with %i errors" %(len(error_list)))
-
-            SetReceivingLight(textBox)   
+            Id = int(a_read.split(bytes(config.ID_MARKER,encoding="UTF-8"))[0])
+            if(Id != config.ID):
+                SetReceivingLight(textBox)               
+                if (b"GS" in a_read):
+                    continue
+                elif (b"MG" in a_read):
+                    textBox.write("\n Message incoming from User Node %i: " %(Id))
+                    textBox.write(ReadUntilEnd(ser,Id))
+                elif (b"FILE"in a_read):
+                    with open (doc,'w') as f:   # Blank document
+                        f.write('')
+                    error_list=[]
+                    textBox.write("\n File Incoming from User Node %i: " %(Id))
+                    open_file(ser,textBox,Id,error_list)
+                    textBox.write("File Received with %i errors" %(len(error_list)))
+    
+                SetReceivingLight(textBox)   
 
 
 
