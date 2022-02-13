@@ -20,17 +20,16 @@ def SendFile(ser,route,textBox):
         packets = int(filesize / config.FILE_SPLIT + 1)        
     textBox.write("\n Sending %i bytes in %i packets." %(filesize, packets))
     message = open_file(route)
-    print(message)
     binary_data = ""
     i=0
     j=0
-    ser.write(bytes("FILE"+config.END_MARKER,encoding="utf8"))
+    ser.write(bytes(str(config.ID)+config.ID_MARKER+"FILE"+config.END_MARKER,encoding="utf8"))
     sleep(2)
     for m in message:
         for car in m:
             binary_data += str(car) + " "  # Turns the caracters into binary
             if(i>config.FILE_SPLIT):
-                ser.write(bytes(binary_data+config.END_MARKER, encoding="utf8"))      # Sends string of 61 integers = 244 bytes (4 x int) 
+                ser.write(bytes(str(config.ID)+config.ID_MARKER+binary_data+config.END_MARKER, encoding="utf8"))      # Sends string of 61 integers = 244 bytes (4 x int) 
                 print(binary_data)
                 textBox.write("Packet %i" %(j))
                 textBox.PB_step(100/packets,0)
@@ -40,12 +39,12 @@ def SendFile(ser,route,textBox):
                 j+=1
             i+=1
     if (binary_data != ""):         # In case the last string is <24 chars
-        ser.write(bytes(binary_data+config.END_MARKER, encoding="utf8"))      
+        ser.write(bytes(str(config.ID)+config.ID_MARKER+binary_data+config.END_MARKER, encoding="utf8"))      
         print(binary_data)
         textBox.write("Packet %i" %(j))
         textBox.PB_step(100/packets,0)
 
     sleep(2)
-    ser.write(bytes("END"+config.END_MARKER, encoding="utf8"))    # End of transmission alert for receiver
+    ser.write(bytes(str(config.ID)+config.ID_MARKER+"END"+config.END_MARKER, encoding="utf8"))    # End of transmission alert for receiver
     textBox.PB_step(0,1)
 

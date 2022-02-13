@@ -169,7 +169,7 @@ At the very bottom, there is a `loading bar` to indicate the transmission/recept
 - [ ] Add Google Search Functionality
 - [ ] Improve Transmission Speed
 - [ ] Ensure Communication with redundancy Checking
-- [ ] Set ID's to each Node
+- [x] Set ID's to each Node
 - [ ] Manage simultaneous transmission without colliding
 - [ ] Make Indirect communication through Middle Nodes
 - [ ] Improve overall performance 

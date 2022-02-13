@@ -30,7 +30,7 @@ void loop() {
   }
   if(r != "" & sread == '*')
   {
-    r = "1#" + r;
+    //r = "1#" + r;
     LoRa.beginPacket();
     LoRa.print(r);
     LoRa.endPacket();
