@@ -30,13 +30,14 @@ def ReadUntilEnd(ser,Id):
     return(message)
 
 # Appends hex data in document
-def open_file(ser,textBox,error_list):   
+def open_file(ser,textBox,Id,error_list):  
+    IdTag = bytes(str(Id)+"#",encoding="UTF-8")
     a_read = ser.readline()        
     index = 0
-    while(a_read!= b"END"):        
-        if(len(a_read)):
+    while(a_read!= IdTag+b"END"):        
+        if(len(a_read) and a_read.split(b"#")[0] == bytes(str(Id),encoding="UTF-8")):
             textBox.write("Packet %i" %(index))
-            a_read = a_read.decode()                            
+            a_read = a_read.decode().replace(IdTag.decode(),"")                            
             try:
                 r_arr = a_read.split()
                 for i in range(0,len(r_arr)):
@@ -72,8 +73,8 @@ def ContinuousReader(ser,textBox):
                 with open (doc,'w') as f:   # Blank document
                     f.write('')
                 error_list=[]
-                textBox.write("\n File Incoming from %i: " %(Id))
-                open_file(ser,textBox,error_list)
+                textBox.write("\n File Incoming from User Node %i: " %(Id))
+                open_file(ser,textBox,Id,error_list)
                 textBox.write("File Received with %i errors" %(len(error_list)))
 
             SetReceivingLight(textBox)   

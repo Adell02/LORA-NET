@@ -11,7 +11,7 @@ def open_file(route):    #makes a large string with all the data in the file
             line= f.readline()            
     return(lines)   
 
-def SendMain(ser,route,textBox):
+def SendFile(ser,route,textBox):
     filesize = os.path.getsize(route)
     if (filesize%62 == 0):
         packets = int(filesize / 62)
@@ -23,13 +23,13 @@ def SendMain(ser,route,textBox):
     binary_data = ""
     i=0
     j=0
-    ser.write(bytes("FILE",encoding="utf8"))
+    ser.write(bytes("FILE*",encoding="utf8"))
     sleep(2)
     for m in message:
         for car in m:
             binary_data += str(car) + " "  # Turns the caracters into binary
             if(i>62):
-                ser.write(bytes(binary_data, encoding="utf8"))      # Sends string of 61 integers = 244 bytes (4 x int) 
+                ser.write(bytes(binary_data+"*", encoding="utf8"))      # Sends string of 61 integers = 244 bytes (4 x int) 
                 #print(j)
                 print(binary_data)
                 #print()
@@ -41,13 +41,13 @@ def SendMain(ser,route,textBox):
                 j+=1
             i+=1
     if (binary_data != ""):         # In case the last string is <24 chars
-        ser.write(bytes(binary_data, encoding="utf8"))      
+        ser.write(bytes(binary_data+"*", encoding="utf8"))      
         #print(j)
         print(binary_data)
         textBox.write("Packet %i" %(j))
         textBox.PB_step(100/packets,0)
 
     sleep(2)
-    ser.write(bytes("END", encoding="utf8"))    # End of transmission alert for receiver
+    ser.write(bytes("END*", encoding="utf8"))    # End of transmission alert for receiver
     textBox.PB_step(0,1)
 

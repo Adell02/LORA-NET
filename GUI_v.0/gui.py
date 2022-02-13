@@ -6,7 +6,7 @@ import PIL.Image
 import PIL.ImageTk
 import serial
 from tkinter import *
-from FileExporterOne import SendMain
+from FileExporterOne import SendFile
 from Message import SendMg
 from ReceiveReader import ContinuousReader
 
@@ -75,7 +75,7 @@ def SendDoc():
     route = filedialog.askopenfilename()
     textBox.write(route)
     try:
-        root.after(0, SendMain(ser, route, textBox))
+        root.after(0, SendFile(ser, route, textBox))
         textBox.write("Sent Successfully.")
 
     except:
