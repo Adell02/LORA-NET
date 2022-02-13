@@ -63,22 +63,23 @@ def ContinuousReader(ser,textBox):
             
         elif(len(a_read) and textBox.indicator.get()==0):  
             Id = int(a_read.split(bytes(config.ID_MARKER,encoding="UTF-8"))[0])
-            if(Id != config.ID):
-                SetReceivingLight(textBox)               
-                if (b"GS" in a_read):
-                    continue
-                elif (b"MG" in a_read):
-                    textBox.write("\n Message incoming from User Node %i: " %(Id))
-                    textBox.write(ReadUntilEnd(ser,Id))
-                elif (b"FILE"in a_read):
-                    with open (doc,'w') as f:   # Blank document
-                        f.write('')
-                    error_list=[]
-                    textBox.write("\n File Incoming from User Node %i: " %(Id))
-                    open_file(ser,textBox,Id,error_list)
-                    textBox.write("File Received with %i errors" %(len(error_list)))
-    
-                SetReceivingLight(textBox)   
+            #if(Id != config.ID):       DISABLED FOR DEBBUGING
+            
+            SetReceivingLight(textBox)               
+            if (b"GS" in a_read):
+                continue
+            elif (b"MG" in a_read):
+                textBox.write("\n Message incoming from User Node %i: " %(Id))
+                textBox.write(ReadUntilEnd(ser,Id))
+            elif (b"FILE"in a_read):
+                with open (doc,'w') as f:   # Blank document
+                    f.write('')
+                error_list=[]
+                textBox.write("\n File Incoming from User Node %i: " %(Id))
+                open_file(ser,textBox,Id,error_list)
+                textBox.write("File Received with %i errors" %(len(error_list)))
+
+            SetReceivingLight(textBox)   
 
 
 
