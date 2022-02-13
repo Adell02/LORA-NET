@@ -8,6 +8,7 @@ FILE_SPLIT = 61         # MAX bytes = 255. Character = 4 bytes (encoded) with so
 MG_SPLIT = 255
 
 ID_MARKER = "#"
+FROM_TO_MARKER = ":"
 END_MARKER = "*"
 
 IN_FILE_URL = 'received_file.rar'

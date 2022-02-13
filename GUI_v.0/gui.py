@@ -13,27 +13,30 @@ from ReceiveReader import ContinuousReader
 import config
 
 
-
 # Menubar functions
 def SavePrompt():
     f = filedialog.asksaveasfile(mode='w', defaultextension=".txt")
     if f is None:
         return
-    text2save = str(textBox.textBox.get(1.0,END))
+    text2save = str(textBox.textBox.get(1.0, END))
     f.write(text2save)
     f.close()
+
 
 def selectall():
     textBox.textBox.focus()
     textBox.textBox.tag_add('sel', '1.0', 'end')
 
+
 def clearall():
     textBox.textBox.config(state=NORMAL)
-    textBox.textBox.delete('1.0',END)
+    textBox.textBox.delete('1.0', END)
     textBox.textBox.config(state=DISABLED)
+
 
 def Help():
     webbrowser.open_new('https://github.com/Adell02/LORA-NET')
+
 
 def AboutLora():
     textBox.write(config.LOG)
@@ -45,15 +48,25 @@ def OpenCom(event):
     try:
         if error.get() == 0:
             textBox.write(
-                "%s port has already been successfully configured" % (ComPort.get()))
+                "\n %s port has already been successfully configured" % (ComPort.get()))
         else:
-            ser = serial.Serial(port=ComPort.get(), baudrate = config.BAUDRATE, timeout=.1)
+            ser = serial.Serial(port=ComPort.get(),
+                                baudrate=config.BAUDRATE, timeout=.1)
             error.set(0)
     except:
         textBox.write("%s port not set correctly." % (ComPort.get()))
         root.update_idletasks()
         comButton.wait_variable(error)
         root.update_idletasks()
+
+def SetToId(event):
+    global ToId
+    ToId = SendToEntry.get()
+    try:
+        ToId = int(ToId)
+        textBox.write("\n Valid ID. Messages will be sent to the User Node with ID: %i." %(ToId))
+    except ValueError or TypeError:
+        textBox.write("Please enter a valid ID (for example: 5)")
 
 
 # Set SENDING indicator light on/off
@@ -71,29 +84,54 @@ def SetSendingLight():
 
 # Function for sending files
 def SendDoc():
-    SetSendingLight()
-    route = filedialog.askopenfilename()
-    textBox.write(route)
-    try:
-        root.after(0, SendFile(ser, route, textBox))        # Function with the file sending procedure without blocking the interface (thanks to root.after)
-        textBox.write("Sent Successfully.")
+    SetSendingLight()      
+    # Error handling (ToID not declared, ser not declared...)  
+    is_ToId = "ToId" in globals()
+    if is_ToId:
+        is_ToId = ToId
+    is_ser = "ser" in globals()
+    if not is_ser:
+        textBox.write("You must set the Serial Port to connect to the Arduino Board first")
+    elif not is_ToId:
+        textBox.write("You must set a receiver ID")
+    else:
+        route = filedialog.askopenfilename()
+        try:
+            # Function with the file sending procedure without blocking the interface (thanks to root.after)
+            textBox.write(route)
+            root.after(0, SendFile(ser, route, ToId, textBox))
+            textBox.write("Sent Successfully")
 
-    except:
-        textBox.write("Sending file CANCELLED")
+        except:
+            textBox.write("Sending file cancelled")
     SetSendingLight()
 
 # Function for sending a Private Message
 def SendMessage(event):
     SetSendingLight()
     mg = Chatmg.get()
-    Chatmg.delete(0, 'end')     # Erase the entry
-    if (len(mg) > 0):
-        textBox.write("\n Message: %s" % (mg))
-        try:
-            root.after(0, SendMg(ser, mg, textBox))     # Fucntion with the message sending procedure
-            textBox .write("Sent successfully")
-        except:
-            textBox.write("Something went wrong.")
+    # Erase the entry after sending a message
+    Chatmg.delete(0, 'end')    
+    # Error handling (ToID not declared, ser not declared, empty message...)
+    is_ToId = "ToId" in globals()
+    if is_ToId:
+        is_ToId = ToId
+    is_ser = "ser" in globals()
+    if not is_ser:
+        textBox.write("You must set the Serial Port to connect to the Arduino Board first")
+    elif not is_ToId:
+        textBox.write("You must set a receiver ID")
+    elif(len(mg)>0):
+        if(config.END_MARKER in mg or config.FROM_TO_MARKER in mg or config.ID_MARKER in mg):
+            textBox.write("The message can't contain '%c', '%c' or '%c'" %(config.END_MARKER,config.FROM_TO_MARKER,config.ID_MARKER))                    
+        else:            
+            try:
+                # Function with the message sending procedure  
+                textBox.write("\n Message: %s" % (mg))            
+                root.after(0, SendMg(ser, mg, ToId, textBox))
+                textBox .write("Sent successfully")                    
+            except:
+                textBox.write("Something went wrong.")
     else:
         textBox.write("You must write something.")
     SetSendingLight()
@@ -136,6 +174,7 @@ class TEXTBOX:
             self.progressbar['value'] = 0
         root.update_idletasks()
 
+
 # Main window setting
 root = Tk()
 root.title("LoRa NET")
@@ -146,18 +185,18 @@ root.config(bd=15, menu=menubar)
 
 # Menubar setting
 filemenu = Menu(menubar, tearoff=0)
-filemenu.add_command(label="Save",command=SavePrompt)
+filemenu.add_command(label="Save", command=SavePrompt)
 filemenu.add_separator()
 filemenu.add_command(label="Exit", command=root.destroy)
 
 editmenu = Menu(menubar, tearoff=0)
-editmenu.add_command(label="Clear",command=clearall)
-editmenu.add_command(label="Select All",command=selectall)
+editmenu.add_command(label="Clear", command=clearall)
+editmenu.add_command(label="Select All", command=selectall)
 
 helpmenu = Menu(menubar, tearoff=0)
-helpmenu.add_command(label="Help",command=Help)
+helpmenu.add_command(label="Help", command=Help)
 helpmenu.add_separator()
-helpmenu.add_command(label="About Lora Net",command=AboutLora)
+helpmenu.add_command(label="About Lora Net", command=AboutLora)
 
 menubar.add_cascade(label="File", menu=filemenu)
 menubar.add_cascade(label="Edit", menu=editmenu)
@@ -186,17 +225,24 @@ titleBox.rowconfigure(4, weight=1, uniform="x")
 title = Label(titleBox, image=logo)
 title.grid(row=0, column=1, sticky="nsew", rowspan=5)
 
+SendToEntry = Entry(titleBox, width=13, justify=CENTER)
+SendToEntry.grid(row=0, column=0, sticky="w")
+SendToEntry.bind('<Return>',SetToId)
+SendToBut = Button(titleBox, width =10,text="Receiver ID",
+                   command=lambda: SetToId(True))
+SendToBut.grid(row=1, column=0, sticky="w")
+
 radioSending = Radiobutton(titleBox, text="Sending", fg="gray",
                            indicatoron=False, state=DISABLED, width=10, value=1)
 radioSending.grid(row=0, column=2, sticky="e")
+
 com = Entry(titleBox, width=13, justify=CENTER)
 com.grid(row=3, column=2, sticky="e")
 com.insert(0, config.DEFAULT_PORT)
-com.bind('<Return>',OpenCom)
-
+com.bind('<Return>', OpenCom)
 ComPort = StringVar()
-
-comButton = Button(titleBox, width=10, text="Set COM", command= lambda: OpenCom(True))
+comButton = Button(titleBox, width=10, text="Set COM",
+                   command=lambda: OpenCom(True))
 comButton.grid(row=4, column=2, sticky="e")
 
 
@@ -206,15 +252,16 @@ optionBox.columnconfigure([0, 3], weight=1)
 
 Searchtxt = Entry(optionBox)
 Searchtxt.grid(row=1, column=1, pady=5, sticky="ew")
-#Searchtxt.bind('<Return>',)
+# Searchtxt.bind('<Return>',)
 searchBut = Button(optionBox, text="Google Search")
 searchBut.grid(row=1, column=2, sticky="ew", pady=5, padx=5)
 
 Chatmg = Entry(optionBox)
 Chatmg.grid(row=2, column=1, pady=5, sticky="ew")
 Chatmg.config(justify="left", state="normal")
-Chatmg.bind('<Return>',SendMessage)
-chatBut = Button(optionBox, text="Send Private Message", command= lambda: SendMessage(True))
+Chatmg.bind('<Return>', SendMessage)
+chatBut = Button(optionBox, text="Send Private Message",
+                 command=lambda: SendMessage(True))
 chatBut.grid(row=2, column=2, sticky="ew", pady=5, padx=5)
 
 fileDir = Button(optionBox, text="Select and send file", command=SendDoc)
