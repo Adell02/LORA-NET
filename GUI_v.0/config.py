@@ -4,8 +4,10 @@ LOG = "\n LORA NET . Version 1.0.\n Options available: \n 1) Google Search: Ente
 ID = 1
 BAUDRATE = 9600
 DEFAULT_PORT = "COM4"
-FILE_SPLIT = 62
+FILE_SPLIT = 61         # MAX bytes = 255. Character = 4 bytes (encoded) with some margin for ID header and markers
 MG_SPLIT = 255
 
 ID_MARKER = "#"
 END_MARKER = "*"
+
+IN_FILE_URL = 'received_file.rar'
