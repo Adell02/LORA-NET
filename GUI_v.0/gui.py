@@ -1,5 +1,4 @@
-from distutils import command
-from operator import is_
+import sys
 import threading
 from tkinter import filedialog
 from tkinter.ttk import Progressbar
@@ -9,6 +8,8 @@ import PIL.ImageTk
 import serial
 import urllib.request
 from tkinter import *
+
+import SearchProtocol
 from FileExporterOne import SendFile
 from Message import SendMg
 from ReceiveReader import ContinuousReader
@@ -77,13 +78,16 @@ def CheckInternet(set):
     url = "https://github.com/Adell02/LORA-NET"
     try:
         urllib.request.urlopen(url)                   
-        if set and shareInternetStatus.get() == 0:            
-            shareInternetStatus.set(1)            
+        if set and textBox.shareInternetStatus.get() == 0:            
+            textBox.shareInternetStatus.set(1)            
             shareInternet['fg'] = "green"
-        elif set and shareInternetStatus.get() == 1:
-            shareInternetStatus.set(0)
+            textBox.write("\n You are now sharing Internet to other User Nodes")
+        elif set and textBox.shareInternetStatus.get() == 1:
+            textBox.shareInternetStatus.set(0)
             shareInternet['fg'] = "black"
-        elif not set and shareInternetStatus.get() == 0:
+            textBox.write("\n You stopped sharing Internet to other User Nodes")
+
+        elif not set and textBox.shareInternetStatus.get() == 0:
             shareInternet['state']=NORMAL
             shareInternet['fg']="black"
             is_internet.set(1)
@@ -91,7 +95,7 @@ def CheckInternet(set):
     except:
         shareInternet['state'] = DISABLED
         shareInternet['fg'] = "gray"
-        shareInternetStatus.set(0)
+        textBox.shareInternetStatus.set(0)
         is_internet.set(0)
         return(False)
 
@@ -99,7 +103,7 @@ def CheckInternet(set):
 def CheckInternetLoop():
     prevstatus = is_internet.get()
     CheckInternet(False)
-    root.after(500,CheckInternetLoop)
+    #root.after(500,CheckInternetLoop)
     if (prevstatus != is_internet.get() and is_internet.get()==1):
         textBox.write("\n You have internet connection now")
     elif(prevstatus != is_internet.get() and is_internet.get()==0):
@@ -117,60 +121,84 @@ def SetSendingLight():
         radioSending['fg'] = 'gray'
         radioSending['state'] = DISABLED
 
-
-# Function for sending files
-def SendDoc():
-    SetSendingLight()      
-    # Error handling (ToID not declared, ser not declared...)  
+#  Error handling (ToID not declared, ser not declared...)      
+def beforeSending(need_ToId):
     is_ToId = "ToId" in globals()
     if is_ToId:
         is_ToId = ToId
     is_ser = "ser" in globals()
     if not is_ser:
         textBox.write("You must set the Serial Port to connect to the Arduino Board first")
-    elif not is_ToId:
+    elif not is_ToId and need_ToId:
         textBox.write("You must set a receiver ID")
     else:
+        return(True)
+    return(False)
+
+# Function to request Internet search
+def GoogleSearch(event):
+    if(beforeSending(False)):
+        search = Searchtxt.get()
+        Searchtxt.delete(0,'end')
+        if (sys.getsizeof(search)>0 and sys.getsizeof(search)<config.MG_SPLIT):
+            if(config.END_MARKER in search or config.FROM_TO_MARKER in search or config.ID_MARKER in search):
+                textBox.write("The search can't contain '%c', '%c' or '%c'" %(config.END_MARKER,config.FROM_TO_MARKER,config.ID_MARKER))                    
+            else:            
+                try:
+                    SetSendingLight()
+                    textBox.write("Sending request to other Nodes...")
+                    root.after(0,SearchProtocol.SendRequest(ser,search))
+                    SetSendingLight()
+                    textBox.callbackStatus.set(1)
+                
+                except:
+                    textBox.write("Something went wrong.")
+        elif(sys.getsizeof(search)>config.MG_SPLIT):
+            textBox.write("Consider reducing the length of the search word/sentence")
+        else:
+            textBox.write("You must write something.")
+
+
+# Function for sending files
+def SendDoc():
+    if(beforeSending(True)):
+        SetSendingLight()      
         route = filedialog.askopenfilename()
         try:
+            SetSendingLight()
             # Function with the file sending procedure without blocking the interface (thanks to root.after)
             textBox.write(route)
             root.after(0, SendFile(ser, route, ToId, textBox))
             textBox.write("Sent Successfully")
+            SetSendingLight()
+
 
         except:
             textBox.write("Sending file cancelled")
-    SetSendingLight()
 
 # Function for sending a Private Message
-def SendMessage(event):
-    SetSendingLight()
-    mg = Chatmg.get()
-    # Erase the entry after sending a message
-    Chatmg.delete(0, 'end')    
-    # Error handling (ToID not declared, ser not declared, empty message...)
-    is_ToId = "ToId" in globals()
-    if is_ToId:
-        is_ToId = ToId
-    is_ser = "ser" in globals()
-    if not is_ser:
-        textBox.write("You must set the Serial Port to connect to the Arduino Board first")
-    elif not is_ToId:
-        textBox.write("You must set a receiver ID")
-    elif(len(mg)>0):
-        if(config.END_MARKER in mg or config.FROM_TO_MARKER in mg or config.ID_MARKER in mg):
-            textBox.write("The message can't contain '%c', '%c' or '%c'" %(config.END_MARKER,config.FROM_TO_MARKER,config.ID_MARKER))                    
-        else:            
-            try:
-                # Function with the message sending procedure  
-                textBox.write("\n Message: %s" % (mg))            
-                root.after(0, SendMg(ser, mg, ToId, textBox))
-                textBox .write("Sent successfully")                    
-            except:
-                textBox.write("Something went wrong.")
-    else:
-        textBox.write("You must write something.")
-    SetSendingLight()
+def SendMessage(event):    
+    if(beforeSending(True)):
+        mg = Chatmg.get()
+        # Erase the entry after sending a message
+        Chatmg.delete(0, 'end')    
+        # Error handling (ToID not declared, ser not declared, empty message...)
+        if(len(mg)>0):
+            if(config.END_MARKER in mg or config.FROM_TO_MARKER in mg or config.ID_MARKER in mg):
+                textBox.write("The message can't contain '%c', '%c' or '%c'" %(config.END_MARKER,config.FROM_TO_MARKER,config.ID_MARKER))                    
+            else:            
+                try:
+                    SetSendingLight()
+                    # Function with the message sending procedure  
+                    textBox.write("\n Message: %s" % (mg))            
+                    root.after(0, SendMg(ser, mg, ToId, textBox))
+                    textBox .write("Sent successfully")    
+                    SetSendingLight()
+                
+                except:
+                    textBox.write("Something went wrong.")
+        else:
+            textBox.write("You must write something.")
 
 
 # TEXTBOX class to use in other files such as receiving and sending ones.
@@ -188,6 +216,10 @@ class TEXTBOX:
 
         self.indicator = IntVar(None, 0)
         self.radioReceiving = Radiobutton()
+
+        self.shareInternetStatus = IntVar()
+
+        self.callbackStatus = IntVar(None,0)
 
     # Function that prints the message to the GUI console
     def write(self, *message, end="\n", sep=" "):
@@ -291,8 +323,8 @@ optionBox.columnconfigure([0, 3], weight=1)
 
 Searchtxt = Entry(optionBox)
 Searchtxt.grid(row=1, column=1, pady=5, sticky="ew")
-# Searchtxt.bind('<Return>',)
-searchBut = Button(optionBox, text="Google Search")
+Searchtxt.bind('<Return>',GoogleSearch)
+searchBut = Button(optionBox, text="Google Search",command=lambda: GoogleSearch(True))
 searchBut.grid(row=1, column=2, sticky="ew", pady=5, padx=5)
 
 Chatmg = Entry(optionBox)
@@ -317,11 +349,10 @@ textBox.radioReceiving['variable'] = textBox.indicator
 # open serial port
 error = IntVar()
 error.set(1)
-shareInternetStatus = IntVar()
-shareInternetStatus.set(0)
+textBox.shareInternetStatus.set(0)
 is_internet = IntVar()
 if(not CheckInternet(False)):    
-    textBox.write("No connection => 'Share Internet' option disabled")
+    textBox.write("No Internet. 'Share Internet' option disabled")
 else:    
     textBox.write("Consider enabling 'Share Internet' (to other User Nodes)")
 

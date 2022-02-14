@@ -1,8 +1,10 @@
 from base64 import encode
 import binascii
 from logging import root
+from time import sleep
 from tkinter import *
 import config
+from SearchProtocol import SendSearch, WebScrapping
 
 # Set RECEIVING indicator
 def SetReceivingLight(textBox):
@@ -54,14 +56,15 @@ def open_file(ser, textBox, header, error_list):
 
 # Main Continuous reading function
 def ContinuousReader(ser, textBox):
-
+    prevFromId = IntVar(None,-1)
     while (root):
         a_read = ser.readline()
         if(b"READY" in a_read):
             textBox.write("\n Node Ready")
             textBox.write("Continuous Reading Enabled")
 
-        elif(len(a_read) and textBox.indicator.get() == 0):
+
+        elif(len(a_read) and textBox.indicator.get() == 0 and textBox.callbackStatus.get()==0):            
             try:
                 # Get the ID from the message incomming
                 header = a_read.split(bytes(config.ID_MARKER, encoding="UTF-8"))[0]
@@ -72,8 +75,14 @@ def ContinuousReader(ser, textBox):
 
             # if(FromId != config.ID):       DISABLED FOR DEBBUGING
             SetReceivingLight(textBox)
-            if (b"GS" in a_read and ToId == config.ID):
-                continue
+            if (b"GS" in a_read and textBox.shareInternetStatus.get()==1 and ToId == config.ALL_ID):                
+                prevFromId.set(FromId)
+                # If this node has Internet connection, it sends a callback to the 
+                SearchOk = bytes(str(FromId) + config.FROM_TO_MARKER + str(config.ID) + config.ID_MARKER + "SEARCHOK" + config.END_MARKER,encoding="UTF-8")                                
+                ser.write(SearchOk)
+                textBox.callbackStatus.set(1)
+                ser.readline()
+
             elif (b"MG" in a_read and ToId == config.ID):
                 textBox.write("\n Message incoming from User Node %i: " % (FromId))
                 textBox.write(ReadUntilEnd(ser, header))
@@ -83,5 +92,26 @@ def ContinuousReader(ser, textBox):
                 open_file(ser, textBox, header, error_list)
                 textBox.write("File Received with %i errors" %
                               (len(error_list)))
-
             SetReceivingLight(textBox)
+        
+        elif(len(a_read) and textBox.indicator.get()==0 and textBox.callbackStatus.get() == 1):
+            SetReceivingLight(textBox)
+            try:
+                # Get the ID from the message incomming
+                header = a_read.split(bytes(config.ID_MARKER, encoding="UTF-8"))[0]
+                ToId = int(header.split(bytes(config.FROM_TO_MARKER,encoding="UTF-8"))[0])
+                FromId = int(header.split(bytes(config.FROM_TO_MARKER,encoding="UTF-8"))[1])
+            except:
+                pass    # Wrong packet with no header, just ignore     
+            if(b"SEARCHOK" in a_read and ToId == config.ID and prevFromId.get() == -1):                     
+                textBox.write("Request callback recevied. Sending query")
+                SendSearch(ser,FromId)
+            
+            elif(ToId == config.ID and FromId == prevFromId.get()):
+                searchTodo = a_read.decode()
+                searchTodo= searchTodo.split(config.ID_MARKER)[1]
+                WebScrapping(ser,searchTodo)
+                textBox.write("Search to do: %s" %(searchTodo))
+            SetReceivingLight(textBox)
+
+            
