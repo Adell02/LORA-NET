@@ -11,7 +11,6 @@ def SendRequest(ser,search):
     ser.write(bytes(request,encoding="UTF-8"))
 
 def SendSearch(ser,respondToId):
-    sleep(1)
     sendSearch = bytes(str(respondToId) + config.FROM_TO_MARKER + str(config.ID) + config.ID_MARKER + searchString + config.END_MARKER,encoding="UTF-8")
     ser.write(sendSearch)
 

@@ -1,7 +1,5 @@
-from base64 import encode
 import binascii
 from logging import root
-from time import sleep
 from tkinter import *
 import config
 from SearchProtocol import SendSearch, WebScrapping
@@ -77,11 +75,13 @@ def ContinuousReader(ser, textBox):
             SetReceivingLight(textBox)
             if (b"GS" in a_read and textBox.shareInternetStatus.get()==1 and ToId == config.ALL_ID):                
                 prevFromId.set(FromId)
+                textBox.write("\n User Node with ID: %i. Has requested a Google Search"%(FromId))
                 # If this node has Internet connection, it sends a callback to the 
                 SearchOk = bytes(str(FromId) + config.FROM_TO_MARKER + str(config.ID) + config.ID_MARKER + "SEARCHOK" + config.END_MARKER,encoding="UTF-8")                                
                 ser.write(SearchOk)
                 textBox.callbackStatus.set(1)
-                ser.readline()
+                # We automatically read ser to avoid reading what it sends itself
+                ser.readline() 
 
             elif (b"MG" in a_read and ToId == config.ID):
                 textBox.write("\n Message incoming from User Node %i: " % (FromId))

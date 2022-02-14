@@ -146,7 +146,7 @@ def GoogleSearch(event):
             else:            
                 try:
                     SetSendingLight()
-                    textBox.write("Sending request to other Nodes...")
+                    textBox.write("\n Sending request to other Nodes...")
                     root.after(0,SearchProtocol.SendRequest(ser,search))
                     SetSendingLight()
                     textBox.callbackStatus.set(1)
