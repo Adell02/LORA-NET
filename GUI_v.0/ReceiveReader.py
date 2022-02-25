@@ -2,7 +2,7 @@ import binascii
 from logging import root
 from tkinter import *
 import config
-from SearchProtocol import SendSearch, WebScrapping
+from SearchProtocol import SendSearch, WebScraping, PrintResult
 
 # Set RECEIVING indicator
 def SetReceivingLight(textBox):
@@ -32,10 +32,10 @@ def open_file(ser, textBox, header, error_list):
         f.write('')
     a_read = ser.readline()
     index = 0
-    while(a_read != header + b"END"):
+    while(a_read != header + bytes(config.ID_MARKER,encoding="UTF-8") + b"END"):
         if(len(a_read) and a_read.split(bytes(config.ID_MARKER, encoding="UTF-8"))[0] == header):
             textBox.write("Packet %i" % (index))
-            a_read = a_read.decode().replace(header.decode(), "")
+            a_read = a_read.decode().replace(header.decode()+config.ID_MARKER, "")
 
             # Try to convert read into hex string (if not possible, packet received wrongly => add the index of that packet to error_list)
             try:
@@ -84,6 +84,7 @@ def ContinuousReader(ser, textBox):
                 ser.readline() 
 
             elif (b"MG" in a_read and ToId == config.ID):
+                textBox.write(header.decode())
                 textBox.write("\n Message incoming from User Node %i: " % (FromId))
                 textBox.write(ReadUntilEnd(ser, header))
             elif (b"FILE" in a_read and ToId == config.ID):
@@ -94,6 +95,7 @@ def ContinuousReader(ser, textBox):
                               (len(error_list)))
             SetReceivingLight(textBox)
         
+        # Google Search Receiver 
         elif(len(a_read) and textBox.indicator.get()==0 and textBox.callbackStatus.get() == 1):
             SetReceivingLight(textBox)
             try:
@@ -106,12 +108,34 @@ def ContinuousReader(ser, textBox):
             if(b"SEARCHOK" in a_read and ToId == config.ID and prevFromId.get() == -1):                     
                 textBox.write("Request callback recevied. Sending query")
                 SendSearch(ser,FromId)
+                textBox.callbackStatus.set(2)                
             
             elif(ToId == config.ID and FromId == prevFromId.get()):
                 searchTodo = a_read.decode()
                 searchTodo= searchTodo.split(config.ID_MARKER)[1]
-                WebScrapping(ser,searchTodo)
-                textBox.write("Search to do: %s" %(searchTodo))
+                textBox.write("Search to do: %s" %(searchTodo))                
+                WebScraping(ser,searchTodo,FromId,textBox)
+                ser.readline() 
+                textBox.callbackStatus.set(2)  
             SetReceivingLight(textBox)
+        
+        elif(len(a_read) and textBox.indicator.get()==0 and textBox.callbackStatus.get() == 2):
+            SetReceivingLight(textBox)
+            try:
+                # Get the ID from the message incomming
+                header = a_read.split(bytes(config.ID_MARKER, encoding="UTF-8"))[0]
+                ToId = int(header.split(bytes(config.FROM_TO_MARKER,encoding="UTF-8"))[0])
+                FromId = int(header.split(bytes(config.FROM_TO_MARKER,encoding="UTF-8"))[1])
+            except:
+                pass    # Wrong packet with no header, just ignore
+            if (b"FILE" in a_read and ToId == config.ID):
+                error_list = []
+                textBox.write("\n Search results comming from User Node %i: " % (FromId))
+                open_file(ser, textBox, header, error_list)
+                PrintResult(textBox)
+                
+            SetReceivingLight(textBox)
+
+
 
             

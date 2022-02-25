@@ -13,3 +13,4 @@ FROM_TO_MARKER = ":"
 END_MARKER = "*"
 
 IN_FILE_URL = 'received_file.rar'
+IN_SEARCH_URL = "received_results_GS.zip"
