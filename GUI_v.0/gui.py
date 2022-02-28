@@ -165,16 +165,16 @@ def SendDoc():
         SetSendingLight()      
         route = filedialog.askopenfilename()
         try:
-            SetSendingLight()
             # Function with the file sending procedure without blocking the interface (thanks to root.after)
             textBox.write(route)
             root.after(0, SendFile(ser, route, ToId, textBox))
             textBox.write("Sent Successfully")
-            SetSendingLight()
 
 
         except:
             textBox.write("Sending file cancelled")
+        finally:
+            SetSendingLight()
 
 # Function for sending a Private Message
 def SendMessage(event):    
@@ -190,7 +190,7 @@ def SendMessage(event):
                 try:
                     SetSendingLight()
                     # Function with the message sending procedure  
-                    textBox.write("\n Message: %s" % (mg))            
+                    textBox.write("\n Message: \n%s" % (mg))            
                     root.after(0, SendMg(ser, mg, ToId, textBox))
                     textBox .write("Sent successfully")    
                     SetSendingLight()

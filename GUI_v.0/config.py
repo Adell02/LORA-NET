@@ -5,12 +5,15 @@ ID = 1
 ALL_ID = 0
 BAUDRATE = 9600
 DEFAULT_PORT = "COM4"
-FILE_SPLIT = 61         # MAX bytes = 255. Character = 4 bytes (encoded) with some margin for ID header and markers
-MG_SPLIT = 255
 
 ID_MARKER = "#"
 FROM_TO_MARKER = ":"
 END_MARKER = "*"
+
+FILE_SPLIT = 255 - len(ID_MARKER) - len(FROM_TO_MARKER) - len(END_MARKER) - len(str(ID))       # MAX bytes = 255. Character = 4 bytes (encoded) with some margin for header and markers
+MG_SPLIT = 255 - len(ID_MARKER) - len(FROM_TO_MARKER) - len(END_MARKER) - len(str(ID))
+PCKT_SLEEP = 1.5    # TIME RESTING AFTER SENDING A PACKET
+
 
 IN_FILE_URL = 'received_file.rar'
 IN_SEARCH_URL = "received_results_GS.zip"

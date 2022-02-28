@@ -19,7 +19,7 @@ void setup() {
 void loop() {
   
   while(Serial.available())
-  {        
+  {            
     sread = Serial.read();   
     if(sread != '*')
     {
@@ -30,12 +30,11 @@ void loop() {
   }
   if(r != "" & sread == '*')
   {
-    //r = "1#" + r;
     LoRa.beginPacket();
     LoRa.print(r);
     LoRa.endPacket();
-    Serial.print(r);
     r = "";
+    Serial.print(r);
   }
   packetSize = LoRa.parsePacket();
   if (packetSize) {

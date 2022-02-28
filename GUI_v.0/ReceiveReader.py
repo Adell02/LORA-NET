@@ -1,5 +1,4 @@
 import binascii
-from logging import root
 from tkinter import *
 import config
 from SearchProtocol import SendSearch, WebScraping, PrintResult
@@ -17,14 +16,19 @@ def SetReceivingLight(textBox):
         textBox.radioReceiving['state'] = DISABLED
 
 # Read message between start and end checking ID on every packet
-def ReadUntilEnd(ser, header):
+def ReadUntilEnd(ser, header,packets,textBox):
     message = ""
     a_read = ser.readline()
+    i=0
     while(a_read != header + bytes(config.ID_MARKER,encoding="UTF-8") + b"END"):
         if(len(a_read) and a_read.split(bytes(config.ID_MARKER, encoding="UTF-8"))[0] == header):
             message += (a_read.decode()).replace(header.decode()+config.ID_MARKER, "")
+            textBox.write("Packet %i" % (i))
+            textBox.PB_step(100/packets, 0)
+            i+=1
+            
         a_read = ser.readline()
-    return(message)
+    return(message,i)
 
 # Writes hex data in blank document checking ID on every packet
 def open_file(ser, textBox, header, error_list):
@@ -35,10 +39,10 @@ def open_file(ser, textBox, header, error_list):
     while(a_read != header + bytes(config.ID_MARKER,encoding="UTF-8") + b"END"):
         if(len(a_read) and a_read.split(bytes(config.ID_MARKER, encoding="UTF-8"))[0] == header):
             textBox.write("Packet %i" % (index))
-            a_read = a_read.decode().replace(header.decode()+config.ID_MARKER, "")
-
+            
             # Try to convert read into hex string (if not possible, packet received wrongly => add the index of that packet to error_list)
             try:
+                a_read = a_read.decode().replace(header.decode()+config.ID_MARKER, "")
                 r_arr = a_read.split()
                 for i in range(0, len(r_arr)):
                     r_arr[i] = '{:02x}'.format(int(r_arr[i], 10), 'x')
@@ -55,12 +59,15 @@ def open_file(ser, textBox, header, error_list):
 # Main Continuous reading function
 def ContinuousReader(ser, textBox):
     prevFromId = IntVar(None,-1)
-    while (root):
-        a_read = ser.readline()
+    while (ser):
+        # Read serial only if not sending or already reading gs,mg or file
+        if(textBox.indicator.get()==0):
+            a_read = ser.readline()
+
+        # OK arduino set up
         if(b"READY" in a_read):
             textBox.write("\n Node Ready")
             textBox.write("Continuous Reading Enabled")
-
 
         elif(len(a_read) and textBox.indicator.get() == 0 and textBox.callbackStatus.get()==0):            
             try:
@@ -84,15 +91,32 @@ def ContinuousReader(ser, textBox):
                 ser.readline() 
 
             elif (b"MG" in a_read and ToId == config.ID):
-                textBox.write(header.decode())
-                textBox.write("\n Message incoming from User Node %i: " % (FromId))
-                textBox.write(ReadUntilEnd(ser, header))
+                packets = int(a_read.decode().split("MG")[1])
+                textBox.write("\n Message incoming from User Node %i with %i packets" % (FromId,packets))
+                msg,pck = ReadUntilEnd(ser, header, packets, textBox)
+                textBox.write("\n Message:")
+                textBox.write(msg)                
+                if pck == packets:
+                    ser.write(bytes(str(FromId)+config.FROM_TO_MARKER+str(config.ID)+config.ID_MARKER + "OK" + config.END_MARKER, encoding="utf8"))
+                else:
+                    ser.write(bytes(str(FromId)+config.FROM_TO_MARKER+str(config.ID)+config.ID_MARKER + "ERROR" + config.END_MARKER, encoding="utf8"))
+                ser.readline()
+                textBox.PB_step(0, 1)
+
+
             elif (b"FILE" in a_read and ToId == config.ID):
                 error_list = []
                 textBox.write("\n File Incoming from User Node %i: " % (FromId))
                 open_file(ser, textBox, header, error_list)
                 textBox.write("File Received with %i errors" %
                               (len(error_list)))
+                
+
+            elif (b"OK" in a_read and ToId == config.ID):
+                textBox.write("User Node %i has received all the packets" %(FromId))
+            elif (b"ERROR" in a_read and ToId == config.ID):
+                textBox.write("User Node %i has NOT received all the packets" %(FromId))
+
             SetReceivingLight(textBox)
         
         # Google Search Receiver 
