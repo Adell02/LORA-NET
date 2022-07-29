@@ -137,7 +137,7 @@ In <a href="#errors">Errors section</a> you may find how to solve any error prin
 The interface consists on a small window built with `Tkinter` and is intended to be a simple but useful and interactive GUI. 
 
 <div align="center">
-<img src="https://user-images.githubusercontent.com/84263340/153661704-ac2f8225-d1c3-42b7-bd6c-7d41504fd93d.png" width="400" height="400">
+<img src="https://user-images.githubusercontent.com/84263340/153921355-1aa8a822-4009-470f-b41d-cfa30e615bb2.png" width="400" height="400">
 
 </div>
 
@@ -169,7 +169,7 @@ At the very bottom, there is a `loading bar` to indicate the transmission/recept
 - [ ] Add Google Search Functionality
 - [ ] Improve Transmission Speed
 - [ ] Ensure Communication with redundancy Checking
-- [ ] Set ID's to each Node
+- [x] Set ID's to each Node
 - [ ] Manage simultaneous transmission without colliding
 - [ ] Make Indirect communication through Middle Nodes
 - [ ] Improve overall performance 

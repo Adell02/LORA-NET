@@ -1,0 +1,6 @@
+{
+    "python.analysis.extraPaths": [
+        "./GUI_v.0",
+        "./GUI_v.0"
+    ]
+}
